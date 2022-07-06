@@ -12,8 +12,9 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 @api_view(['GET'])
 def api_root(request, format=None):
     return Response({
-        # 'users': reverse('user-list', request=request, format=format),
-        # 'notes': reverse('notes-list', request=request, format=format)
+        'login': reverse('login', request=request, format=format),
+        'login_refresh_jwt': reverse('login_token_refresh', request=request, format=format),
+        'registration': reverse('register', request=request, format=format)
     })
 
 

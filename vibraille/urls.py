@@ -19,8 +19,8 @@ router.register(r'users', UserViewSet)
 urlpatterns = [
     path('', api_root),
     path('admin/', admin.site.urls),
-    path('login/', VBObtainTokenPairView.as_view(), name='token_obtain_pair'),
-    path('login/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('register/', RegisterView.as_view(), name='auth_register'),
+    path('login/', VBObtainTokenPairView.as_view(), name='login'),
+    path('login/refresh/', TokenRefreshView.as_view(), name='login_token_refresh'),
+    path('register/', RegisterView.as_view(), name='register'),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
