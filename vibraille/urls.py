@@ -9,7 +9,7 @@ from vibraille.vibraille_services.views import (
     VBObtainTokenPairView,
     RegisterView,
     api_root,
-    get_notes,
+    get_all_notes,
     UserViewSet
 )
 from rest_framework_simplejwt.views import (
@@ -27,7 +27,7 @@ urlpatterns = [
     path('login/', VBObtainTokenPairView.as_view(), name='login'),
     path('login/refresh/', TokenRefreshView.as_view(), name='login_token_refresh'),
     path('register/', RegisterView.as_view(), name='register'),
-    path('notes/translate', TranslatorBrailleViews.as_view(), name='translate_img'),
-    path('notes/<int:note_id>/', get_notes, name='view_note'),
+    path('notes/translate/', TranslatorBrailleViews.as_view(), name='translate_img'),
+    path('notes/', get_all_notes, name='view_all_notes'),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

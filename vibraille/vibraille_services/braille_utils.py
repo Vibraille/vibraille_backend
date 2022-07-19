@@ -1,8 +1,6 @@
 from django.conf import settings
-import cv2
 import random
 import os
-import pytesseract
 import boto3
 
 
@@ -30,7 +28,7 @@ class BrailleTranslator:
 
     def file_loc_helper(self, image_data):
         try:
-            img_path = f"{settings.MEDIA_ROOT}/tmp/{image_data.name}"
+            img_path = f"{settings.MEDIA_ROOT}/{image_data.name}"
             with open(img_path, 'wb+') as destination:
                 for chunk in image_data.chunks():
                     destination.write(chunk)
@@ -91,7 +89,7 @@ class BrailleTranslator:
     def _remove_tmp_file(self):
         try:
             os.remove(self.img_path)
-        except:
-            pass
+        except Exception as e:
+            raise Exception(e)
 
 

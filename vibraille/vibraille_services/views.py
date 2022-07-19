@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User
-from rest_framework import viewsets, permissions, generics, status, serializers, views
-from rest_framework.permissions import AllowAny
-from rest_framework.decorators import api_view
+from django.core import serializers as dj_serializer
+from rest_framework import viewsets, permissions, generics, status
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -13,29 +14,41 @@ from .serializers import (
     TranslationSerializer,
     NoteSerializer
 )
-from .braille_utils import BrailleTranslator
 
 
 @api_view(['GET'])
 def api_root(request, format=None):
     return Response({
         'translate_img': reverse('translate_img', request=request, format=format),
+        'view_all_notes': reverse('view_all_notes', request=request, format=format),
         'login': reverse('login', request=request, format=format),
         'login_refresh_jwt': reverse('login_token_refresh', request=request, format=format),
         'registration': reverse('register', request=request, format=format)
     })
 
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_all_notes(request):
+    import pdb;pdb.set_trace()
+    active_user = User.objects.filter(username=request.user.username).first()
+    all_notes = dj_serializer.serialize('json', Note.objects.filter(user=active_user).all())
+    return Response(data=all_notes, status=status.HTTP_200_OK)
+
+
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def get_note_details(request):
+#     import pdb;pdb.set_trace()
+#     active_user = User.objects.filter(username=request.user.username).first()
+#     all_notes = dj_serializer.serialize('json', Note.objects.filter(user=active_user).all())
+#     return Response(data=all_notes, status=status.HTTP_200_OK)
+
+
 class TranslatorBrailleViews(generics.CreateAPIView):
     queryset = Note.objects.all()
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
     serializer_class = TranslationSerializer
-
-
-def get_notes(request, note_id):
-    if request.method == "GET":
-        note = Note.objects.get(id=note_id)
-        return Response(data=note.braille_format.encode('utf-8'), status=status.HTTP_200_OK)
 
 
 class NotesBrailleViews(generics.GenericAPIView):

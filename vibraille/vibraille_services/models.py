@@ -10,10 +10,8 @@ class Note(models.Model):
     img_name = models.CharField(max_length=100, default='')
     ascii_text = models.TextField(default='')
     braille_format = models.TextField(default='')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
     class Meta:
         app_label = 'vibraille'
         ordering = ['created']
-
-    def is_valid(self):
-        pass
