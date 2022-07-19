@@ -66,8 +66,6 @@ class TranslationSerializer(serializers.ModelSerializer):
 
     def create(self, data):
         user_acct = self.context['request'].user
-        # if Note.objects.filter(title=data.get("img").name).exists():
-        #     raise serializers.ValidationError('This image has already been translated.')
         new_note = Note()
         try:
             b_process = BrailleTranslator(data.get("img"))
@@ -80,24 +78,6 @@ class TranslationSerializer(serializers.ModelSerializer):
             new_note.user = user_acct
             new_note.save()
             return new_note
-        except Exception as e:
-            return Response(data=e, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class NoteSerializer(serializers.ModelSerializer):
-    title = serializers.CharField(max_length=100, required=False, allow_blank=True)
-    img = serializers.ImageField(required=False)
-    img_name = serializers.CharField(max_length=100, required=False, allow_blank=True)
-    ascii_text = serializers.CharField(required=False, allow_blank=True)
-    braille_format = serializers.CharField(required=False, allow_blank=True)
-
-    class Meta:
-        model = Note
-        fields = ['created', 'title', 'img', 'img_name', 'ascii_text', 'braille_format']
-
-    def get(self, data):
-        try:
-            return Response(data=data.braille_format.encode('utf-8'), status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response(data=e, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
