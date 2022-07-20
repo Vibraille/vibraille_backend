@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from django.core import serializers as dj_serializer
-from django.http import Http404, HttpResponseForbidden
+from django.http import Http404, HttpResponseForbidden, HttpResponseBadRequest
 from rest_framework import viewsets, permissions, generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
@@ -18,6 +18,7 @@ from .serializers import (
 
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def api_root(request, format=None):
     return Response({
         'translate_img': reverse('translate_img', request=request, format=format),
@@ -45,8 +46,24 @@ def get_note_details(request, note_id):
     active_user = User.objects.filter(username=request.user.username).first()
     _target_note = get_object_or_404(Note, id=note_id)
     if active_user == _target_note.user:
-        note_details = dj_serializer.serialize('json', Note.objects.filter(id=note_id))
+        note_details = dj_serializer.serialize('json', [_target_note])
         return Response(data=note_details, status=status.HTTP_200_OK)
+    else:
+        raise HttpResponseForbidden("Note does not belong to user.")
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def edit_note_details(request, note_id):
+    active_user = User.objects.filter(username=request.user.username).first()
+    _target_note = get_object_or_404(Note, id=note_id)
+    if active_user == _target_note.user:
+        if request.data.get('title'):
+            Note.objects.filter(id=note_id).update(title=request.data.get('title'))
+            note_details = dj_serializer.serialize('json', Note.objects.filter(id=note_id))
+            return Response(data=note_details, status=status.HTTP_200_OK)
+        else:
+            return HttpResponseBadRequest
     else:
         raise HttpResponseForbidden("Note does not belong to user.")
 
