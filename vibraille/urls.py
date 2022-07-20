@@ -12,14 +12,12 @@ from vibraille.vibraille_services.views import (
     get_note_details,
     edit_note_details,
     remove_note,
-    UserViewSet
 )
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
 router = routers.DefaultRouter()
-router.register(r'users', UserViewSet, basename='users')
 
 urlpatterns = [
     path('', api_root),

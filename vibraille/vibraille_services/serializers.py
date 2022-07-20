@@ -1,11 +1,10 @@
 from django.contrib.auth.models import User
-from .models import Note
+from .models import Note, VibrailleUser
 from .braille_utils import BrailleTranslator
 from rest_framework import serializers, status
 from rest_framework.response import Response
 from rest_framework.validators import UniqueValidator
-from django.contrib.auth.password_validation import validate_password
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, PasswordField
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -13,38 +12,54 @@ class RegisterSerializer(serializers.ModelSerializer):
         required=True,
         validators=[UniqueValidator(queryset=User.objects.all())]
     )
-    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-    password2 = serializers.CharField(write_only=True, required=True)
+    password = serializers.CharField(write_only=True, required=True)
+    phone_number = serializers.IntegerField(write_only=True, required=True)
 
     class Meta:
         model = User
-        fields = ('username', 'password', 'password2', 'email', 'first_name', 'last_name')
-        extra_kwargs = {
-            'first_name': {'required': True},
-            'last_name': {'required': True}
-        }
-
-    def validate(self, attrs):
-        if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError({"password": "Password fields didn't match."})
-
-        return attrs
+        fields = ('username', 'password', 'email', 'phone_number')
 
     def create(self, validated_data):
         user = User.objects.create(
             username=validated_data['username'],
             email=validated_data['email'],
-            first_name=validated_data['first_name'],
-            last_name=validated_data['last_name']
         )
-
         user.set_password(validated_data['password'])
         user.save()
 
+        _vb_obj = VibrailleUser.objects.get(user=user)
+        _vb_obj.phone_number = validated_data['phone_number']
+        _vb_obj.save()
         return user
 
 
 class VBTokenObtainPairSerializer(TokenObtainPairSerializer):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'] = serializers.CharField(required=False)
+        self.fields['phone_number'] = serializers.IntegerField(required=False)
+        self.fields['email'] = serializers.EmailField(required=False)
+        self.fields['password'] = PasswordField(trim_whitespace=False)
+
+    def validate(self, attrs):
+        credentials = {
+            'username': '',
+            'password': attrs.get("password")
+        }
+        user_obj = None
+        if attrs.get("phone_number"):
+            _target_users = [
+                users for users in User.objects.all() if users.vibrailleuser.phone_number == attrs.get("phone_number")
+            ]
+            if _target_users:
+                user_obj = _target_users[0]
+        else:
+            user_obj = User.objects.filter(email=attrs.get("email")).first() or \
+                       User.objects.filter(username=attrs.get("username")).first()
+        if user_obj:
+            credentials['username'] = user_obj.username
+        return super().validate(credentials)
 
     @classmethod
     def get_token(cls, user):
@@ -80,11 +95,3 @@ class TranslationSerializer(serializers.ModelSerializer):
             return new_note
         except Exception as e:
             return Response(data=e, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-class UserSerializer(serializers.HyperlinkedModelSerializer):
-    snippets = serializers.HyperlinkedRelatedField(many=True, view_name='notes', read_only=True)
-
-    class Meta:
-        model = User
-        fields = ['url', 'id', 'username', 'notes']

@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
 
 
 class Note(models.Model):
@@ -15,3 +16,19 @@ class Note(models.Model):
     class Meta:
         app_label = 'vibraille'
         ordering = ['created']
+
+
+class VibrailleUser(models.Model):
+    """Override model to include phone field."""
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    phone_number = models.IntegerField(null=True, unique=True)
+
+
+def create_profile(sender, **kwargs):
+    user = kwargs["instance"]
+    if kwargs["created"]:
+        user_profile = VibrailleUser(user=user)
+        user_profile.save()
+
+
+post_save.connect(create_profile, sender=User)

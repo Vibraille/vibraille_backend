@@ -2,7 +2,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from django.core import serializers as dj_serializer
 from django.http import Http404, HttpResponseForbidden, HttpResponseBadRequest
-from rest_framework import viewsets, permissions, generics, status
+from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -10,7 +10,6 @@ from rest_framework.reverse import reverse
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import Note
 from .serializers import (
-    UserSerializer,
     VBTokenObtainPairSerializer,
     RegisterSerializer,
     TranslationSerializer
@@ -96,8 +95,3 @@ class VBObtainTokenPairView(TokenObtainPairView):
     permission_classes = (AllowAny,)
     serializer_class = VBTokenObtainPairSerializer
 
-
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all().order_by('-date_joined')
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
