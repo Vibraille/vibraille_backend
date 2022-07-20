@@ -5,10 +5,13 @@ from django.contrib.auth.models import User
 class Note(models.Model):
     """Model to create a notes object."""
     created = models.DateTimeField(auto_now_add=True)
-    title = models.CharField(max_length=100, blank=True, default='')
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    title = models.CharField(max_length=100)
+    img = models.ImageField(default='')
+    img_name = models.CharField(max_length=100, default='')
     ascii_text = models.TextField(default='')
     braille_format = models.TextField(default='')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
     class Meta:
+        app_label = 'vibraille'
         ordering = ['created']
