@@ -23,7 +23,7 @@ class Note(models.Model):
 class VibrailleUser(models.Model):
     """Override model to include phone field."""
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    phone_number = models.IntegerField(null=True, unique=True)
+    phone_number = models.CharField(max_length=17, default='')
     verified_phone = models.BooleanField(default=False)
     verified_email = models.BooleanField(default=False)
     veri_str_phone = models.CharField(max_length=5, default="%05d" % randint(0, 99999))

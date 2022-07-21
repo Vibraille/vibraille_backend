@@ -14,7 +14,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         validators=[UniqueValidator(queryset=User.objects.all())]
     )
     password = serializers.CharField(write_only=True, required=True)
-    phone_number = serializers.IntegerField(write_only=True, required=True)
+    phone_number = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
@@ -54,7 +54,7 @@ class VBTokenObtainPairSerializer(TokenObtainPairSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['username'] = serializers.CharField(required=False)
-        self.fields['phone_number'] = serializers.IntegerField(required=False)
+        self.fields['phone_number'] = serializers.CharField(required=False)
         self.fields['email'] = serializers.EmailField(required=False)
         self.fields['password'] = PasswordField(trim_whitespace=False)
 
