@@ -1,6 +1,7 @@
 # Vibraille Backend Service
-####Authored: Rick Tesmond
-####Contact: richard.d.tesmond@vanderbilt.edu
+#### Authored: Rick Tesmond
+
+#### Contact: richard.d.tesmond@vanderbilt.edu
 
 This backend services provides functionality to convert images to two braille formats: unicode and\
 binary, with the intent that this information can be used by haptic drivers. It also handles CRUD \
