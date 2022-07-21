@@ -8,6 +8,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, Pass
 
 
 class RegisterSerializer(serializers.ModelSerializer):
+    """Serializer for registration"""
     email = serializers.EmailField(
         required=True,
         validators=[UniqueValidator(queryset=User.objects.all())]
@@ -20,11 +21,13 @@ class RegisterSerializer(serializers.ModelSerializer):
         fields = ('username', 'password', 'email', 'phone_number')
 
     def to_representation(self, instance):
+        """Override to include verification strings."""
         representation = super(RegisterSerializer, self).to_representation(instance['user'])
         representation['verification_strings'] = instance['verification_codes']
         return representation
 
     def create(self, validated_data):
+        """Creates a new user."""
         data = {}
         user = User.objects.create(
             username=validated_data['username'],
@@ -46,6 +49,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class VBTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """JWT based login and token handling serializer."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -55,6 +59,7 @@ class VBTokenObtainPairSerializer(TokenObtainPairSerializer):
         self.fields['password'] = PasswordField(trim_whitespace=False)
 
     def validate(self, attrs):
+        """Custom validation for checking verified accounts."""
         credentials = {
             'username': '',
             'password': attrs.get("password")
@@ -79,12 +84,14 @@ class VBTokenObtainPairSerializer(TokenObtainPairSerializer):
 
     @classmethod
     def get_token(cls, user):
+        """Retrieves token."""
         token = super(VBTokenObtainPairSerializer, cls).get_token(user)
         token['username'] = user.username
         return token
 
 
 class TranslationSerializer(serializers.ModelSerializer):
+    """Serializer for handling image to braille translation."""
     title = serializers.CharField(max_length=100, required=False, allow_blank=True)
     img = serializers.ImageField(required=False)
     img_name = serializers.CharField(max_length=100, required=False, allow_blank=True)
@@ -96,6 +103,7 @@ class TranslationSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'created', 'title', 'img', 'img_name', 'ascii_text', 'braille_format', 'braille_binary']
 
     def create(self, data):
+        """Creates a new Note object to contain braille translation."""
         user_acct = self.context['request'].user
         new_note = Note()
         try:

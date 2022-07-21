@@ -20,6 +20,7 @@ from .serializers import (
 @api_view(['GET'])
 @permission_classes([AllowAny])
 def api_root(request, format=None):
+    """Root Paths for UI."""
     return Response({
         'translate_img': reverse('translate_img', request=request, format=format),
         'view_all_notes': reverse('view_all_notes', request=request, format=format),
@@ -32,6 +33,7 @@ def api_root(request, format=None):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_all_notes(request):
+    """Get all notes associated with user."""
     try:
         active_user = User.objects.filter(username=request.user.username).first()
         all_notes = dj_serializer.serialize('json', Note.objects.filter(user=active_user).all())
@@ -43,6 +45,7 @@ def get_all_notes(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_note_details(request, note_id):
+    """Gets details of a given note."""
     active_user = User.objects.filter(username=request.user.username).first()
     _target_note = get_object_or_404(Note, id=note_id)
     if active_user == _target_note.user:
@@ -55,6 +58,7 @@ def get_note_details(request, note_id):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def edit_note_details(request, note_id):
+    """Edit details on a note (Title is the only updatable field."""
     active_user = User.objects.filter(username=request.user.username).first()
     _target_note = get_object_or_404(Note, id=note_id)
     if active_user == _target_note.user:
@@ -71,6 +75,7 @@ def edit_note_details(request, note_id):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def remove_note(request, note_id):
+    """Deletes a given note."""
     active_user = User.objects.filter(username=request.user.username).first()
     _target_note = get_object_or_404(Note, id=note_id)
     if active_user == _target_note.user:
@@ -83,6 +88,7 @@ def remove_note(request, note_id):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def verify_phone(request):
+    """Verification of phone associated with user account."""
     active_user = User.objects.filter(username=request.user.username).first()
     if request.data.get('verify_str'):
         attempted_token = request.data.get('verify_str')
@@ -101,6 +107,7 @@ def verify_phone(request):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def verify_email(request):
+    """Verification of email associated with user account."""
     active_user = User.objects.filter(username=request.user.username).first()
     if request.data.get('verify_str'):
         attempted_token = request.data.get('verify_str')
@@ -119,6 +126,7 @@ def verify_email(request):
 @api_view(['PUT'])
 @permission_classes([IsAuthenticated])
 def verify_refresh(request):
+    """Refreshes verification strings for endpoint."""
     _ret_data = {}
     active_user = User.objects.filter(username=request.user.username).first()
     _vb = VibrailleUser.objects.get(user=active_user)
@@ -133,18 +141,21 @@ def verify_refresh(request):
 
 
 class TranslatorBrailleViews(generics.CreateAPIView):
+    """Generic API view for handling image to braille translation."""
     queryset = Note.objects.all()
     permission_classes = (IsAuthenticated,)
     serializer_class = TranslationSerializer
 
 
 class RegisterView(generics.CreateAPIView):
+    """Generic API view for registration."""
     queryset = User.objects.all()
     permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer
 
 
 class VBObtainTokenPairView(TokenObtainPairView):
+    """JWT View for handling Login."""
     permission_classes = (AllowAny,)
     serializer_class = VBTokenObtainPairSerializer
 
