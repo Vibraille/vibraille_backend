@@ -12,6 +12,7 @@ class Note(models.Model):
     img_name = models.CharField(max_length=100, default='')
     ascii_text = models.TextField(default='')
     braille_format = models.TextField(default='')
+    braille_binary = models.TextField(default='')
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
     class Meta:

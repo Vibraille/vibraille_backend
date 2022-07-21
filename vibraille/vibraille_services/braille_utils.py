@@ -5,7 +5,7 @@ import boto3
 
 
 ascii_braille_map = {' ': '⠀', '!': '⠮', '"': '⠐', '#': '⠼', '$': '⠫', '%': '⠩',
-                     '&': '⠯', '': '⠄', '(': '⠷', ')': '⠾', '*': '⠡', '+': '⠬',
+                     '&': '⠯', '\'': '⠄', '(': '⠷', ')': '⠾', '*': '⠡', '+': '⠬',
                      ',': '⠠', '-': '⠤', '.': '⠨', '/': '⠌', '0': '⠴', '1': '⠂',
                      '2': '⠆', '3': '⠒', '4': '⠲', '5': '⠢', '6': '⠖', '7': '⠶',
                      '8': '⠦', '9': '⠔', ':': '⠱', ';': '⠰', '<': '⠣', '=': '⠿',
@@ -15,6 +15,18 @@ ascii_braille_map = {' ': '⠀', '!': '⠮', '"': '⠐', '#': '⠼', '$': '⠫',
                      'p': '⠏', 'q': '⠟', 'r': '⠗', 's': '⠎', 't': '⠞', 'u': '⠥',
                      'v': '⠧', 'w': '⠺', 'x': '⠭', 'y': '⠽', 'z': '⠵', '[': '⠪',
                      '\\': '⠳', ']': '⠻', '^': '⠘', '_': '⠸'}
+
+binary_braille_map = {' ': '000000', '!': '011101', '"': '000010', '#': '001111', '$': '110101', '%': '100101',
+                      '&': '111101', '\'': '001000', '(': '111011', ')': '111011', '*': '100001', '+': '001101',
+                      ',': '000001', '-': '001001', '.': '000101', '/': '001100', '0': '001011', '1': '010000',
+                      '2': '011000', '3': '010010', '4': '010011', '5': '010001', '6': '011010', '7': '011011',
+                      '8': '011001', '9': '001010', ':': '100011', ';': '000011', '<': '110001', '=': '111111',
+                      '>': '001110', '?': '100111', '@': '000100', 'a': '100000', 'b': '110000', 'c': '100100',
+                      'd': '100110', 'e': '100010', 'f': '110100', 'g': '110110', 'h': '110010', 'i': '010100',
+                      'j': '010110', 'k': '101000', 'l': '111000', 'm': '101100', 'n': '101110', 'o': '101010',
+                      'p': '111100', 'q': '111110', 'r': '111010', 's': '011100', 't': '011110', 'u': '101001',
+                      'v': '111001', 'w': '010111', 'x': '101101', 'y': '101111', 'z': '101011', '[': '010101',
+                      '\\': '110011', ']': '110111', '^': '000110', '_': '000111'}
 
 
 class BrailleTranslator:
@@ -65,10 +77,22 @@ class BrailleTranslator:
             raise Exception(e)
 
     def convert_str_to_braille(self):
-        _lowered_str = self.conv_str.lower()
-        res_str = [ascii_braille_map[val] for val in _lowered_str if ascii_braille_map.get(val)]
-        self.output = ''.join(res_str)
-        return self.output
+        try:
+            _lowered_str = self.conv_str.lower()
+            res_str = [ascii_braille_map[val] for val in _lowered_str if ascii_braille_map.get(val)]
+            self.output = ''.join(res_str)
+            return self.output
+        except:
+            raise Exception("Invalid characters detected in translated text.")
+
+    def convert_to_binary(self):
+        try:
+            _lowered_str = self.conv_str.lower()
+            res_str = [binary_braille_map[val] for val in _lowered_str if binary_braille_map.get(val)]
+            self.output = ''.join(res_str)
+            return self.output
+        except Exception:
+            raise Exception("Invalid characters detected in translated text.")
 
     def upload_to_s3(self):
         s3 = boto3.client(

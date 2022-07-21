@@ -19,7 +19,13 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username', 'password', 'email', 'phone_number')
 
+    def to_representation(self, instance):
+        representation = super(RegisterSerializer, self).to_representation(instance['user'])
+        representation['verification_strings'] = instance['verification_codes']
+        return representation
+
     def create(self, validated_data):
+        data = {}
         user = User.objects.create(
             username=validated_data['username'],
             email=validated_data['email'],
@@ -30,7 +36,13 @@ class RegisterSerializer(serializers.ModelSerializer):
         _vb_obj = VibrailleUser.objects.get(user=user)
         _vb_obj.phone_number = validated_data['phone_number']
         _vb_obj.save()
-        return user
+
+        data['user'] = user
+        data['verification_codes'] = {
+            "verify_email": _vb_obj.veri_str_email,
+            "verify_phone": _vb_obj.veri_str_phone
+        }
+        return data
 
 
 class VBTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -71,24 +83,6 @@ class VBTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['username'] = user.username
         return token
 
-    def validate(self, attrs):
-        data = super().validate(attrs)
-        refresh = self.get_token(self.user)
-        data['refresh'] = str(refresh)
-        data['access'] = str(refresh.access_token)
-        my_user = User.objects.filter(pk=self.user.id).first()
-        if my_user:
-            _vb = VibrailleUser.objects.get(user=my_user)
-            data['user'] = {
-                "verify_email": _vb.veri_str_email,
-                "verify_phone": _vb.veri_str_phone,
-                "id": my_user.id,
-                "email": my_user.email,
-                "phone_number": _vb.phone_number,
-                "username": my_user.username
-            }
-        return data
-
 
 class TranslationSerializer(serializers.ModelSerializer):
     title = serializers.CharField(max_length=100, required=False, allow_blank=True)
@@ -99,7 +93,7 @@ class TranslationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Note
-        fields = ['id', 'user', 'created', 'title', 'img', 'img_name', 'ascii_text', 'braille_format']
+        fields = ['id', 'user', 'created', 'title', 'img', 'img_name', 'ascii_text', 'braille_format', 'braille_binary']
 
     def create(self, data):
         user_acct = self.context['request'].user
@@ -112,6 +106,7 @@ class TranslationSerializer(serializers.ModelSerializer):
             new_note.img_name = data.get("img").name
             new_note.ascii_text = b_process.convert_img_to_str()
             new_note.braille_format = b_process.convert_str_to_braille()
+            new_note.braille_binary = b_process.convert_to_binary()
             new_note.user = user_acct
             new_note.save()
             return new_note
