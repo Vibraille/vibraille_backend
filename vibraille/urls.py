@@ -12,6 +12,9 @@ from vibraille.vibraille_services.views import (
     get_note_details,
     edit_note_details,
     remove_note,
+    verify_phone,
+    verify_email,
+    verify_refresh
 )
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
@@ -30,5 +33,8 @@ urlpatterns = [
     path('notes/<int:note_id>/', get_note_details, name='view_note_detail'),
     path('notes/<int:note_id>/edit', edit_note_details, name='view_note_detail'),
     path('notes/<int:note_id>/delete', remove_note, name='remove_note'),
+    path('verify/phone/', verify_phone, name='verify_phone'),
+    path('verify/email/', verify_email, name='verify_email'),
+    path('verify/refresh/', verify_refresh, name='verify_refresh'),
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -58,6 +58,10 @@ class VBTokenObtainPairSerializer(TokenObtainPairSerializer):
             user_obj = User.objects.filter(email=attrs.get("email")).first() or \
                        User.objects.filter(username=attrs.get("username")).first()
         if user_obj:
+            if attrs.get("email") and not user_obj.vibrailleuser.verified_email:
+                return "Email is not verified yet!"
+            elif attrs.get("phone_number") and not user_obj.vibrailleuser.verified_phone:
+                return "Phone Number is not verified yet!"
             credentials['username'] = user_obj.username
         return super().validate(credentials)
 
@@ -66,6 +70,24 @@ class VBTokenObtainPairSerializer(TokenObtainPairSerializer):
         token = super(VBTokenObtainPairSerializer, cls).get_token(user)
         token['username'] = user.username
         return token
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        refresh = self.get_token(self.user)
+        data['refresh'] = str(refresh)
+        data['access'] = str(refresh.access_token)
+        my_user = User.objects.filter(pk=self.user.id).first()
+        if my_user:
+            _vb = VibrailleUser.objects.get(user=my_user)
+            data['user'] = {
+                "verify_email": _vb.veri_str_email,
+                "verify_phone": _vb.veri_str_phone,
+                "id": my_user.id,
+                "email": my_user.email,
+                "phone_number": _vb.phone_number,
+                "username": my_user.username
+            }
+        return data
 
 
 class TranslationSerializer(serializers.ModelSerializer):
@@ -77,7 +99,7 @@ class TranslationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Note
-        fields = ['user','created', 'title', 'img', 'img_name', 'ascii_text', 'braille_format']
+        fields = ['id', 'user', 'created', 'title', 'img', 'img_name', 'ascii_text', 'braille_format']
 
     def create(self, data):
         user_acct = self.context['request'].user

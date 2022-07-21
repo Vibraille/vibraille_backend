@@ -7,8 +7,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.reverse import reverse
+from random import randint
 from rest_framework_simplejwt.views import TokenObtainPairView
-from .models import Note
+from .models import Note, VibrailleUser
 from .serializers import (
     VBTokenObtainPairSerializer,
     RegisterSerializer,
@@ -59,7 +60,7 @@ def edit_note_details(request, note_id):
     if active_user == _target_note.user:
         if request.data.get('title'):
             Note.objects.filter(id=note_id).update(title=request.data.get('title'))
-            note_details = dj_serializer.serialize('json', Note.objects.filter(id=note_id))
+            note_details = dj_serializer.serialize('json', Note.objects.get(id=note_id))
             return Response(data=note_details, status=status.HTTP_200_OK)
         else:
             return HttpResponseBadRequest
@@ -77,6 +78,58 @@ def remove_note(request, note_id):
         return Response(status=status.HTTP_204_NO_CONTENT)
     else:
         raise HttpResponseForbidden("Note does not belong to user.")
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def verify_phone(request):
+    active_user = User.objects.filter(username=request.user.username).first()
+    if request.data.get('verify_str'):
+        attempted_token = request.data.get('verify_str')
+        if active_user.vibrailleuser.veri_str_phone == attempted_token:
+            _vb = VibrailleUser.objects.get(user=active_user)
+            _vb.verified_phone = True
+            _vb.veri_str_phone = ''
+            _vb.save()
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(data="Verification code did not match.", status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response(data="No data passed.", status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def verify_email(request):
+    active_user = User.objects.filter(username=request.user.username).first()
+    if request.data.get('verify_str'):
+        attempted_token = request.data.get('verify_str')
+        if active_user.vibrailleuser.veri_str_email == attempted_token:
+            _vb = VibrailleUser.objects.get(user=active_user)
+            _vb.verified_email = True
+            _vb.veri_str_email = ''
+            _vb.save()
+            return Response(status=status.HTTP_200_OK)
+        else:
+            return Response(data="Verification code did not match.", status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response(data="No data passed.", status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def verify_refresh(request):
+    _ret_data = {}
+    active_user = User.objects.filter(username=request.user.username).first()
+    _vb = VibrailleUser.objects.get(user=active_user)
+    if not _vb.verified_phone:
+        _vb.veri_str_phone = "%05d" % randint(0, 99999)
+        _ret_data["verification_phone"] = _vb.veri_str_phone
+    if not _vb.verified_email:
+        _vb.veri_str_email = "%05d" % randint(0, 99999)
+        _ret_data["verification_email"] = _vb.veri_str_email
+    _vb.save()
+    return Response(data=_ret_data, status=status.HTTP_200_OK)
 
 
 class TranslatorBrailleViews(generics.CreateAPIView):
