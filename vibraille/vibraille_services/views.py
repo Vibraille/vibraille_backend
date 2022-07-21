@@ -64,7 +64,7 @@ def edit_note_details(request, note_id):
     if active_user == _target_note.user:
         if request.data.get('title'):
             Note.objects.filter(id=note_id).update(title=request.data.get('title'))
-            note_details = dj_serializer.serialize('json', Note.objects.get(id=note_id))
+            note_details = dj_serializer.serialize('json', [Note.objects.get(id=note_id)])
             return Response(data=note_details, status=status.HTTP_200_OK)
         else:
             return HttpResponseBadRequest
@@ -86,10 +86,12 @@ def remove_note(request, note_id):
 
 
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def verify_phone(request):
     """Verification of phone associated with user account."""
-    active_user = User.objects.filter(username=request.user.username).first()
+    active_user = None
+    if request.data.get('phone_number'):
+        active_user = VibrailleUser.objects.filter(phone_number=request.data.get('phone_number')).first().user
     if request.data.get('verify_str'):
         attempted_token = request.data.get('verify_str')
         if active_user.vibrailleuser.veri_str_phone == attempted_token:
@@ -105,10 +107,12 @@ def verify_phone(request):
 
 
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def verify_email(request):
     """Verification of email associated with user account."""
-    active_user = User.objects.filter(username=request.user.username).first()
+    active_user = None
+    if request.data.get('email'):
+        active_user = User.objects.filter(email=request.data.get('email')).first()
     if request.data.get('verify_str'):
         attempted_token = request.data.get('verify_str')
         if active_user.vibrailleuser.veri_str_email == attempted_token:
@@ -124,11 +128,15 @@ def verify_email(request):
 
 
 @api_view(['PUT'])
-@permission_classes([IsAuthenticated])
 def verify_refresh(request):
     """Refreshes verification strings for endpoint."""
     _ret_data = {}
-    active_user = User.objects.filter(username=request.user.username).first()
+    if request.data.get('email'):
+        active_user = User.objects.filter(email=request.data.get('email')).first()
+    elif request.data.get('phone_number'):
+        active_user = VibrailleUser.objects.filter(phone_number=request.data.get('phone_number')).first().user
+    else:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
     _vb = VibrailleUser.objects.get(user=active_user)
     if not _vb.verified_phone:
         _vb.veri_str_phone = "%05d" % randint(0, 99999)

@@ -80,7 +80,19 @@ class VBTokenObtainPairSerializer(TokenObtainPairSerializer):
             elif attrs.get("phone_number") and not user_obj.vibrailleuser.verified_phone:
                 return "Phone Number is not verified yet!"
             credentials['username'] = user_obj.username
-        return super().validate(credentials)
+
+        data = super().validate(credentials)
+        refresh = self.get_token(self.user)
+        data['refresh'] = str(refresh)
+        data['access'] = str(refresh.access_token)
+        _vb = VibrailleUser.objects.get(user=user_obj)
+        data['user'] = {
+            "id": user_obj.id,
+            "email": user_obj.email,
+            "phone_number": _vb.phone_number,
+            "username": user_obj.username
+        }
+        return data
 
     @classmethod
     def get_token(cls, user):
