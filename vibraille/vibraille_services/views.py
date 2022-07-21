@@ -128,6 +128,7 @@ def verify_email(request):
 
 
 @api_view(['PUT'])
+@permission_classes([AllowAny])
 def verify_refresh(request):
     """Refreshes verification strings for endpoint."""
     _ret_data = {}
