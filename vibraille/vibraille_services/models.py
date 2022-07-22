@@ -26,8 +26,8 @@ class VibrailleUser(models.Model):
     phone_number = models.CharField(max_length=17, default='')
     verified_phone = models.BooleanField(default=False)
     verified_email = models.BooleanField(default=False)
-    veri_str_phone = models.CharField(max_length=5, default="%05d" % randint(0, 99999))
-    veri_str_email = models.CharField(max_length=5, default="%05d" % randint(0, 99999))
+    veri_str_phone = models.CharField(max_length=5, default='')
+    veri_str_email = models.CharField(max_length=5, default='')
 
 
 def create_profile(sender, **kwargs):
