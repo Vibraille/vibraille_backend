@@ -5,6 +5,7 @@ from rest_framework import serializers, status
 from rest_framework.response import Response
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, PasswordField
+from random import randint
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -38,6 +39,8 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         _vb_obj = VibrailleUser.objects.get(user=user)
         _vb_obj.phone_number = validated_data['phone_number']
+        _vb_obj.veri_str_phone = "%05d" % randint(0, 99999)
+        _vb_obj.veri_str_email = "%05d" % randint(0, 99999)
         _vb_obj.save()
 
         data['user'] = user
