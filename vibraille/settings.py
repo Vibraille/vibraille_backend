@@ -24,19 +24,12 @@ environ.Env.read_env()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
-
-# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -80,10 +73,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'vibraille.wsgi.application'
 
-
-# Database
-# https://docs.djangoproject.com/en/4.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -91,13 +80,13 @@ DATABASES = {
         'USER': env('DB_USER'),
         'PASSWORD': env('DB_PASS'),
         'HOST': env('DB_ENDPOINT'),
-        'PORT': env('DB_PORT')
+        'PORT': env('DB_PORT'),
+        'OPTIONS': {
+            'sql_mode': 'traditional',
+        }
     }
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {

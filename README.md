@@ -13,7 +13,9 @@ functionality on Note objects (stored instances of image to braille conversions)
 - AWS Textract and AWS S3
 - Postgresql
 - SimpleJWT
-### How to run locally
+
+### How to start server locally
+*Any `manage.py` command needs to be run from the project root*
 1. Ensure you have a version of Python 3.9 installed
 2. Create a virtual environment and install the requirements using pip: `pip install -r requirements.txt`
 3. Start virtual environment
@@ -25,6 +27,12 @@ functionality on Note objects (stored instances of image to braille conversions)
     
 7. Run your local server: `python manage.py runserver`
     1. Defaults to port 127.0.0.1:8000
+   
+### How to run tests:
+- All the tests can be found `vibraille/vibraille_services/tests/`
+- Ensure you have the requirements installed and setup from step #2 above.
+
+To run the tests, simply run: `python manage.py test`
 
 ### Querying the endpoints manually using CURL:
 #### Registration:
@@ -53,6 +61,7 @@ functionality on Note objects (stored instances of image to braille conversions)
 
 #### Delete your first Note
 `curl -X DELETE -H "Authorization: Bearer <access token>" http://localhost:8000/notes/1/delete`
+
 
 -----
 #API Guide:
