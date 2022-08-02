@@ -79,9 +79,7 @@ class VBTokenObtainPairSerializer(TokenObtainPairSerializer):
                        User.objects.filter(username=attrs.get("username")).first()
         if user_obj:
             if attrs.get("email") and not user_obj.vibrailleuser.verified_email:
-                return "Email is not verified yet!"
-            elif attrs.get("phone_number") and not user_obj.vibrailleuser.verified_phone:
-                return "Phone Number is not verified yet!"
+                return Response(data="Email is not verified yet!", status=status.HTTP_401_UNAUTHORIZED)
             credentials['username'] = user_obj.username
 
         data = super().validate(credentials)
