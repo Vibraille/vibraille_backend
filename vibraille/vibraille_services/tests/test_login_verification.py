@@ -76,14 +76,8 @@ class LoginTestCase(APITestCase):
         login_data = {'email': self.reg_info['email'], 'password': self.reg_info['password']}
         response = self.client.post(self.login_url, login_data)
         self.assertEqual(
-            str(response.data),
+            response.data["detail"],
             'Email is not verified yet!',
-        )
-        login_data = {'phone_number': self.reg_info['phone_number'], 'password': self.reg_info['password']}
-        response = self.client.post(self.login_url, login_data)
-        self.assertEqual(
-            str(response.data),
-            'Phone Number is not verified yet!',
         )
 
         # Test email verification and login

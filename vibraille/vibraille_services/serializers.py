@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from .models import Note, VibrailleUser
 from .braille_utils import BrailleTranslator
 from rest_framework import serializers, status
+from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.response import Response
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, PasswordField
@@ -79,7 +80,7 @@ class VBTokenObtainPairSerializer(TokenObtainPairSerializer):
                        User.objects.filter(username=attrs.get("username")).first()
         if user_obj:
             if attrs.get("email") and not user_obj.vibrailleuser.verified_email:
-                return Response(data="Email is not verified yet!", status=status.HTTP_401_UNAUTHORIZED)
+                raise AuthenticationFailed(detail="Email is not verified yet!", code=401)
             credentials['username'] = user_obj.username
 
         data = super().validate(credentials)
