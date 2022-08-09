@@ -30,7 +30,7 @@ functionality on Note objects (stored instances of image to braille conversions)
    
 ### How to run tests:
 - All the tests can be found `vibraille/vibraille_services/tests/`
-- Ensure you have the requirements installed and setup from step #2 above.
+- Ensure you have the requirements installed and setup from step #2 above, and have your virtualenv activated
 
 To run the tests, simply run: `python manage.py test`
 
